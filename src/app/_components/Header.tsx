@@ -89,7 +89,7 @@ export default async function Header() {
     const user = await currentUser();
 
     return (
-        <header className="border-b border-gray-300 p-6 flex items-center justify-between">
+        <header className="sticky top-0 z-50 w-full border-b border-gray-300 bg-background/95 supports-[backdrop-filter]:bg-background/60 p-6 flex items-center justify-between">
             <MainNav user={user} />
             <MobileNav user={user} />
             <div className="hidden md:inline-block">
