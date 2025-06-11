@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Button } from "~/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs"
+import { auth } from "@clerk/nextjs/server"
 
 function Header() {
   return (
@@ -123,7 +124,8 @@ function Footer() {
 
 
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const user = await auth();
   return (
     <>
       <Header />
@@ -148,9 +150,20 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <SignInButton>Start Your First Workout</SignInButton>
-              </Button>
+
+              {
+                user.userId
+                  ?
+                  <Button size="lg" asChild>
+                    <Link href={"/dashboard"}>Go to Dashboard</Link>
+                  </Button>
+                  :
+                  <SignInButton>
+                    <Button>
+                      Start Your First Workout
+                    </Button>
+                  </SignInButton>
+              }
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Learn More</Link>
               </Button>
@@ -314,9 +327,11 @@ export default function LandingPage() {
               Join thousands of users who have simplified their fitness tracking with FitTrack.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button>
-                <SignInButton>Start Tracking Your Workouts now!</SignInButton>
-              </Button>
+              <SignInButton>
+                <Button>
+                  Start Tracking Your Workouts now!
+                </Button>
+              </SignInButton>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Learn More</Link>
               </Button>

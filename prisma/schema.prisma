@@ -8,13 +8,23 @@ datasource db {
 }
 
 model User {
-  id            String  @id @default(uuid())
-  first_name    String
-  last_name     String
-  email         String
-  clerk_id      String  @unique
-  profile_image String?
-  subscribed    Boolean @default(false)
+  id             String           @id @default(uuid())
+  first_name     String
+  last_name      String
+  email          String
+  clerk_id       String           @unique
+  profile_image  String?
+  subscribed     Boolean          @default(false)
+  WeeklyGoal     WeeklyGoal[]
+  WorkoutPlan    WorkoutPlan[]
+  WorkoutSession WorkoutSession[]
+  WorkoutStreaak WorkoutStreaak[]
+}
+
+model Muscle {
+  name         String     @id
+  primaryFor   Exercise[] @relation("PrimaryMuscles")
+  secondaryFor Exercise[] @relation("SecondaryMuscles")
 }
 
 model Exercise {
@@ -31,32 +41,55 @@ model Exercise {
   primaryMuscles   Muscle[] @relation("PrimaryMuscles")
   secondaryMuscles Muscle[] @relation("SecondaryMuscles")
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Workout   Workout[]
-}
-
-model Muscle {
-  name         String     @id
-  primaryFor   Exercise[] @relation("PrimaryMuscles")
-  secondaryFor Exercise[] @relation("SecondaryMuscles")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  Workout          Workout[]
+  WorkoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id])
+  workoutSessionId String?
 }
 
 model Workout {
-  id            String       @id @default(uuid())
-  exercise      Exercise     @relation(fields: [exerciseId], references: [id])
-  exerciseId    String
-  weight        Int
-  reps          Int
-  WorkoutPlan   WorkoutPlan? @relation(fields: [workoutPlanId], references: [id])
-  workoutPlanId String?
-  duration Int
+  id               String          @id @default(uuid())
+  exercise         Exercise        @relation(fields: [exerciseId], references: [id])
+  exerciseId       String
+  weight           Int
+  reps             Int
+  WorkoutPlan      WorkoutPlan?    @relation(fields: [workoutPlanId], references: [id])
+  workoutPlanId    String?
+  duration         Int
+  WorkoutSession   WorkoutSession? @relation(fields: [workoutSessionId], references: [id])
+  workoutSessionId String?
+}
+
+model WorkoutSession {
+  id          String     @id @default(uuid())
+  workouts    Workout[]
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  type        String //Upper body, lower body
+  durationMin Int
+  date        DateTime
+  exercises   Exercise[]
+  createdAt   DateTime   @default(now())
 }
 
 model WeeklyGoal {
-  id          String        @id @default(uuid())
-  WorkoutPlan WorkoutPlan[]
-  totalWorkouts Int
+  id                String        @id @default(uuid())
+  WorkoutPlan       WorkoutPlan[]
+  totalWorkouts     Int
+  completedWorkouts Int
+  weekStart         DateTime
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+}
+
+model WorkoutStreaak {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  currentStreak Int      @default(0)
+  longestStreak Int
+  updatedAt     DateTime
 }
 
 model WorkoutPlanSetting {
@@ -69,51 +102,15 @@ model WorkoutPlanSetting {
 }
 
 model WorkoutPlan {
-  id                   String             @id @default(uuid())
-  workouts             Workout[]
+  id       String    @id @default(uuid())
+  workouts Workout[]
 
   workoutPlanSettings  WorkoutPlanSetting @relation(fields: [workoutPlanSettingId], references: [id])
   workoutPlanSettingId String
 
-  weeklyGoals          WeeklyGoal         @relation(fields: [weeklyGoalId], references: [id])
-  weeklyGoalId         String
+  weeklyGoals  WeeklyGoal @relation(fields: [weeklyGoalId], references: [id])
+  weeklyGoalId String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
-
-model WorkoutSummary{
-  id                   String             @id @default(uuid())
-}
-
-
-/*
-        totalMonthWorkouts: 25,
-        previousMonthWorkouts: 22,
-        checkInCount: 7,
-        longestStreak: 14,
-        workoutStas: {
-            targetDuration: 60,
-            durationsPerWorkout: [
-                40, 20, 60, 30, 70, 50, 20
-            ]
-        },
-        lastThreeWorkouts: [
-            {
-                title: "Upper Body",
-                date: "Today",
-                duration: 45,
-                exercises: 4
-            },
-            {
-                title: "Cardio",
-                date: "Yesterday",
-                duration: 30,
-                exercises: 2
-            },
-            {
-                title: "Lower Body",
-                date: "2 days ago",
-                duration: 50,
-                exercises: 5
-            },
-        ]
-
-*/
