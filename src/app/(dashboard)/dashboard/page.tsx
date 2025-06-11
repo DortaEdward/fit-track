@@ -20,7 +20,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center gap-2">
                         <Button asChild>
-                            <Link href="/workout-session">
+                            <Link href="/dashboard/workout-session">
                                 <Activity className="mr-2 h-4 w-4" />
                                 New Workout
                             </Link>
