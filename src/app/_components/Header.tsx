@@ -5,7 +5,6 @@ import { Button } from "~/components/ui/button"
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
 import { currentUser, type User } from "@clerk/nextjs/server"
 
-
 type Props = {
     user: User | null
 }
