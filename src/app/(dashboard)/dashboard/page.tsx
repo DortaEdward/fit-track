@@ -1,4 +1,4 @@
-import {  Activity } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import WorkoutTab from "./_components/WorkoutTab";
 
 
 export default function Dashboard() {
+    const data = null;
     return (
         <div className="p-6">
             <div>

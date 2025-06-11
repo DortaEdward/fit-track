@@ -8,7 +8,7 @@ export default function SignInButton() {
 
     function handleSignIn() {
         redirectToSignIn({
-            redirectUrl: "/dashboard", // or wherever you want to go after sign-in
+            redirectUrl: "/dashboard",
         });
     }
     return (

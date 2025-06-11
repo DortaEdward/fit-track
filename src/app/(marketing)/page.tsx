@@ -2,9 +2,8 @@ import { ArrowRight, Activity, Timer, Bell, BarChart3, Smartphone, Zap } from "l
 import Link from "next/link"
 
 import { Button } from "~/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import SignInButton from "./_components/SignInButton"
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
+import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs"
 
 function Header() {
   return (
@@ -21,9 +20,6 @@ function Header() {
           <Link href="#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
             How it Works
           </Link>
-          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-            Pricing
-          </Link>
         </nav>
         <div className="flex items-center gap-2">
           <SignedIn>
@@ -33,13 +29,8 @@ function Header() {
             <UserButton />
           </SignedIn>
           <SignedOut>
-            <Button variant="ghost" asChild>
-              <Link href="/">Sign In</Link>
-            </Button>
             <Button asChild>
-              <Link href="/">
-                Get Started
-              </Link>
+              <SignInButton>Sign In </SignInButton>
             </Button>
           </SignedOut>
         </div>
@@ -136,13 +127,13 @@ export default function LandingPage() {
   return (
     <>
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 px-6 md:px-0">
         {/* Hero Section */}
         <section className="container py-24 md:py-32 mx-auto flex flex-col items-center">
           <div className=" max-w-4xl text-center">
             <div className="mb-8">
               {/* Slogan */}
-              <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium mb-6">
+              <div className="inline-flex items-center rounded-full border-2 px-3 py-1 text-sm font-medium mb-6">
                 <Zap className="mr-2 h-4 w-4" />
                 Simple. Effective. Minimalistic.
               </div>
@@ -158,10 +149,7 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link href="/">
-                  Start Your First Workout
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                <SignInButton>Start Your First Workout</SignInButton>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Learn More</Link>
@@ -326,7 +314,9 @@ export default function LandingPage() {
               Join thousands of users who have simplified their fitness tracking with FitTrack.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <SignInButton />
+              <Button>
+                <SignInButton>Start Tracking Your Workouts now!</SignInButton>
+              </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#features">Learn More</Link>
               </Button>

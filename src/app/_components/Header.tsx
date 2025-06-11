@@ -1,4 +1,4 @@
-import { Activity, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 import Link from "next/link"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet"
 import { Button } from "~/components/ui/button"
@@ -14,7 +14,7 @@ function MainNav({ user }: Props) {
         <div className="flex items-center justify-between">
             <div className="flex items-center">
                 <Link href={"/"} className="flex gap-2">
-                    <Activity />
+                <img src={"/logo.png"} className="h-6 rounded" />
                     <span className="font-bold md:inline-block hidden">Fit-Track</span>
                 </Link>
                 {
