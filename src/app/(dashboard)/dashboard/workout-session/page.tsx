@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "~/components/ui/input"
+import WorkoutTimer from "./_components/WorkoutTimer"
+import RestTimer from "./_components/RestTimer"
 
 type Workout = {
     id: number,
@@ -19,14 +21,32 @@ type Workout = {
 export default function WorkoutSession() {
 
     const startTime = new Date();
-    const currentDate = `${new Date().getMonth()}/${new Date().getDay()}/${new Date().getFullYear()}`;
-
-    const [time, setTime] = useState(0);
-    const [isRunning, setIsRunning] = useState(false);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const currentDate = startTime.toLocaleDateString();
 
     const [inputValue, setInputValue] = useState<string>("");
     const [workouts, setWorkouts] = useState<Workout[]>([]);
+
+    function getTotalSets() {
+        let returnValue = 0;
+
+        for (let i = 0; i < workouts.length; i++) {
+            // @ts-ignore
+            returnValue += workouts[i]?.sets
+        }
+        return returnValue
+    }
+    function getCompletedSets() {
+        let returnValue = 0;
+
+        for (let i = 0; i < workouts.length; i++) {
+            // @ts-ignore
+            if (workouts[i]?.done) {
+                // @ts-ignore
+                returnValue += workouts[i]?.sets
+            }
+        }
+        return returnValue
+    }
 
     function handleAddWorkout() {
         if (!inputValue) return;
@@ -44,9 +64,6 @@ export default function WorkoutSession() {
         setInputValue("");
     }
 
-    function findWorkoutIndex(id: number) {
-        return workouts.findIndex((workOut) => workOut.id === id);
-    }
 
     function handleWorkoutUpdate(id: number, key: keyof Workout, value: any) {
         setWorkouts(prev =>
@@ -57,48 +74,6 @@ export default function WorkoutSession() {
         console.log(workouts)
     }
 
-    useEffect(() => {
-        const initialTime = Math.floor((Date.now() - startTime.getTime()) / 1000)
-        setTime(initialTime);
-        if (isRunning) {
-            intervalRef.current = setInterval(() => {
-                setTime(prev => prev + 1)
-            }, 1000)
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-            }
-        }
-
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-            }
-        }
-
-    }, [isRunning, startTime])
-
-
-
-    const toggleTimer = () => {
-        setIsRunning(prev => !prev);
-    }
-
-    const resetTimer = () => {
-        setTime(0);
-        setIsRunning(true)
-    }
-
-    function formatedTime(seconds: number) {
-        const hours = Math.floor(seconds / 3600)
-        const minutes = Math.floor((seconds % 3600) / 60)
-        const remainingSeconds = seconds % 60
-
-        if (hours > 0) {
-            return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
-        }
-        return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
-    }
 
     return (
         <div className="flex-1 p-4">
@@ -117,40 +92,8 @@ export default function WorkoutSession() {
             </section>
 
             <section className="py-6 grid md:grid-cols-2 gap-4">
-                {/* Workout Timer Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-2xl text-center">Workout Timer</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-col items-center space-y-4">
-                            <p className="text-4xl font-black font-mono tracking-wider">{formatedTime(time)}</p>
-                            <div className="flex items-center gap-2">
-                                <Button size={"lg"} onClick={toggleTimer}>
-                                    {
-                                        isRunning
-                                            ?
-                                            <>
-                                                <StopCircle className="mr-2 h-4 w-4" />
-                                                Stop
-                                            </>
-                                            :
-                                            <>
-                                                <Play className="mr-2 h-4 w-4" />
-                                                Start
-                                            </>
-
-                                    }
-                                </Button>
-                                <Button variant={"outline"} onClick={resetTimer}>
-                                    <RotateCcw className="mr-2 h-4 w-4" />
-                                    Reset
-                                </Button>
-
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Workout Timer Card || NEED TO FIX TIME */}
+                <WorkoutTimer startTime={startTime} />
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-2xl text-center">Workout Summary</CardTitle>
@@ -158,11 +101,20 @@ export default function WorkoutSession() {
                     <CardContent>
                         <div className="flex items-center justify-between">
                             <p>Progress</p>
-                            <p>0/0 sets</p>
+                            <p>{getCompletedSets()}/{getTotalSets()} sets</p>
                         </div>
                         {/* Progress Bar */}
                         <div className="w-full mt-2">
-                            <div className="h-6 w-full rounded-full border bg-gray-200"></div>
+                            <div className="h-6 w-full rounded-full border bg-gray-200 overflow-hidden relative">
+                                <div className={`bg-red-500 h-full absolute top-0 left-0`}
+                                    style={
+                                        {
+                                            width: `${(getCompletedSets() / getTotalSets()) * 100}%`
+                                        }
+                                    }>
+
+                                </div>
+                            </div>
                         </div>
                         <div className="flex items-center justify-evenly mt-6">
                             <div className="text-center">
@@ -170,13 +122,14 @@ export default function WorkoutSession() {
                                 <p className="text-sm text-gray-400">Exercises</p>
                             </div>
                             <div className="text-center">
-                                <p className="font-bold text-3xl">0</p>
+                                <p className="font-bold text-3xl">{getTotalSets()}</p>
                                 <p className="text-sm text-gray-400">Total Sets</p>
                             </div>
                         </div>
 
                     </CardContent>
                 </Card>
+                <RestTimer />
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-2xl text-center">Workout Log</CardTitle>
@@ -234,8 +187,7 @@ export default function WorkoutSession() {
 
                     </CardContent>
                 </Card>
-                <Card>
-                </Card>
+
             </section>
         </div>
     )
