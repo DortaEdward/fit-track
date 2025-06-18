@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Label } from "@radix-ui/react-label";
 import { Bell, BellRing, Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -9,13 +9,29 @@ import { Switch } from "~/components/ui/switch";
 export default function RestTimer() {
 
     const [isRunning, setIsRunning] = useState(false)
-    const [timeLeft, setTimeLeft] = useState(0)
+    const [timeLeft, setTimeLeft] = useState(60)
+    const [customTime, setCustomTime] = useState<number>(0);
+    const [selectedTime, setSelectedTime] = useState<number>(0);
 
-    const [notificationToggle, setNotificationToggle] = useState(true);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const lastStartTimeRef = useRef<number | null>(null);
 
+    const [notificationToggle, setNotificationToggle] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    function startRestTimer(num: number | null) {
+    function startRestTimer(secs: number) {
+        setTimeLeft(secs)
+        setSelectedTime(secs)
+    }
 
+    const resetTimer = () => {
+        setIsRunning(false)
+        setTimeLeft(0);
+    }
+
+    function handleRestTimerSet(secs: number) {
+        if (isRunning) return
+        startRestTimer(secs)
     }
 
     function formatTime(seconds: number) {
@@ -30,13 +46,60 @@ export default function RestTimer() {
     }
 
     function pauseTimer(event: any): void {
-        throw new Error("Function not implemented.");
+        setIsRunning(false);
     }
+
+    function playNotification() {
+        if (!audioRef.current) {
+            audioRef.current = new Audio("/assets/notification.mp3");
+        }
+        audioRef.current.currentTime = 0; // reset to start
+        audioRef.current.play();
+
+    }
+
+    useEffect(() => {
+        if (isRunning && timeLeft > 0) {
+            lastStartTimeRef.current = Date.now();
+            intervalRef.current = setInterval(() => {
+                if (lastStartTimeRef.current !== null) {
+                    const now = Date.now();
+                    const elapsed = Math.floor((now - lastStartTimeRef.current) / 1000);
+                    setTimeLeft(prev => {
+                        const updated = prev - elapsed
+                        if (updated <= 0) {
+                            setIsRunning(false);
+                            setTimeLeft(selectedTime)
+                            return 0;
+                        }
+                        return updated
+                    });
+                    lastStartTimeRef.current = now;
+                }
+            }, 1000)
+        } else {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+            lastStartTimeRef.current = null;
+            if (notificationToggle && timeLeft == 0) {
+                playNotification()
+            }
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
+
+    }, [isRunning, timeLeft])
+
+
 
     return (
         <Card>
             <CardHeader>
-
                 <CardTitle className="text-2xl text-center flex justify-between">
                     <div className="flex items-center gap-1">
                         <Timer />
@@ -67,16 +130,16 @@ export default function RestTimer() {
                     {timeLeft === 0 && isRunning && <p className="text-sm font-medium text-green-600 mt-1">Rest complete!</p>}
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
-                    <Button size="sm" className="cursor-pointer" onClick={() => startRestTimer(60)} variant="outline">
+                    <Button size="sm" disabled={isRunning} className="cursor-pointer" onClick={() => handleRestTimerSet(60)} variant="outline">
                         1:00
                     </Button>
-                    <Button size="sm" className="cursor-pointer" onClick={() => startRestTimer(90)} variant="outline">
+                    <Button size="sm" disabled={isRunning} className="cursor-pointer" onClick={() => handleRestTimerSet(90)} variant="outline">
                         1:30
                     </Button>
-                    <Button size="sm" className="cursor-pointer" onClick={() => startRestTimer(120)} variant="outline">
+                    <Button size="sm" disabled={isRunning} className="cursor-pointer" onClick={() => handleRestTimerSet(120)} variant="outline">
                         2:00
                     </Button>
-                    <Button size="sm" className="cursor-pointer" onClick={() => startRestTimer(180)} variant="outline">
+                    <Button size="sm" disabled={isRunning} className="cursor-pointer" onClick={() => handleRestTimerSet(180)} variant="outline">
                         3:00
                     </Button>
                 </div>
@@ -89,14 +152,13 @@ export default function RestTimer() {
                         <Input
                             id="custom-time"
                             type="number"
-                            // value={customTime}
-                            // onChange={(e) => setCustomTime(e.target.value)}
-                            // onBlur={updateCustomTime}
+                            disabled={isRunning}
+                            onChange={(e) => setCustomTime(Number(e.target.value))}
                             className="h-8"
                         />
                     </div>
-                    <Button size="sm" onClick={() => startRestTimer(0)} className="mt-5 cursor-pointer">
-                        Start
+                    <Button size="sm" disabled={isRunning} onClick={() => handleRestTimerSet(customTime)} className="mt-5 cursor-pointer">
+                        Set
                     </Button>
                 </div>
 
@@ -108,14 +170,14 @@ export default function RestTimer() {
                         </Button>
                     ) : (
                         <Button
-                            // onClick={() => setIsRunning(true)} 
+                            onClick={() => setIsRunning(true)}
                             disabled={timeLeft === 0}>
                             <Play className="mr-2 h-4 w-4" />
-                            Resume
+                            Start
                         </Button>
                     )}
                     <Button
-                        // onClick={resetTimer} 
+                        onClick={resetTimer}
                         variant="outline">
                         <RotateCcw className="mr-2 h-4 w-4" />
                         Reset
